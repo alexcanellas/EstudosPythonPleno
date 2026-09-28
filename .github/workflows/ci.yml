@@ -1,0 +1,50 @@
+name: CI
+
+# Quando rodar: em todo push na main, e em todo Pull Request
+# apontando para a main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  testes:
+    # A máquina virtual que o GitHub sobe do zero para este job.
+    runs-on: ubuntu-latest
+
+    steps:
+      # actions/checkout é uma "action" pronta, mantida pelo próprio
+      # GitHub: ela baixa o código do repositório dentro da VM. Sem
+      # isso, a VM começa vazia.
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # As variáveis do .env não existem aqui (o .env nunca foi
+      # commitado, de propósito). O CI precisa das suas próprias,
+      # definidas diretamente no step.
+      - name: Rodar a suíte de testes
+        env:
+          SECRET_KEY: chave-temporaria-so-para-o-ci-nao-e-segredo-de-verdade
+          DEBUG: 'False'
+          ALLOWED_HOSTS: 127.0.0.1,localhost
+        run: pytest -v
+
+      - name: Medir cobertura
+        env:
+          SECRET_KEY: chave-temporaria-so-para-o-ci-nao-e-segredo-de-verdade
+          DEBUG: 'False'
+          ALLOWED_HOSTS: 127.0.0.1,localhost
+        run: |
+          coverage run -m pytest
+          coverage report -m
