@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Concorrência{% endblock %}
+
+{% block content %}
+<h1>⚙️ Concorrência</h1>
+<p>threading, multiprocessing, asyncio e o GIL — e por que o resultado muda dependendo do tipo de tarefa. O código de verdade está em:</p>
+<div class="arquivo-ref">concorrencia/exemplos.py</div>
+<p>Roda as funções <code>demo_*</code> no shell do Django (cada uma leva alguns segundos, é proposital):</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from concorrencia.exemplos import *
+&gt;&gt;&gt; demo_gil_threading_cpu_bound()</code></pre>
+
+<h2>O GIL, resumido</h2>
+<p>O CPython tem um lock global (GIL) que garante que só uma thread executa bytecode Python por vez. Isso significa que <strong>threading não ajuda em tarefa CPU-bound</strong> (cálculo pesado), porque só uma thread roda por vez de qualquer jeito — mas <strong>ajuda em tarefa I/O-bound</strong> (esperar rede/disco), porque o GIL é liberado durante a espera.</p>
+
+<h2>1. CPU-bound com threading (quase nenhum ganho)</h2>
+<p>Duas tarefas de cálculo pesado rodando em threads separadas. O ganho esperado é próximo de <strong>1x</strong> — ou seja, quase nenhuma melhora, porque o GIL não deixa as threads calcularem em paralelo de verdade.</p>
+<p>Ver: <code>tarefa_cpu_bound()</code>, <code>demo_gil_threading_cpu_bound()</code></p>
+
+<h2>2. CPU-bound com multiprocessing (ganho real)</h2>
+<p>A mesma tarefa, agora com processos separados. Cada processo tem seu próprio interpretador Python (e seu próprio GIL), então roda em paralelo de verdade, aproveitando múltiplos núcleos. Ganho esperado: próximo de <strong>2x</strong> (com 2 processos).</p>
+<p>Ver: <code>demo_multiprocessing_cpu_bound()</code></p>
+
+<h2>3. I/O-bound com threading (ganho real)</h2>
+<p>Aqui a história muda: threads esperando I/O (simulado com <code>sleep</code>) não competem por CPU, então rodam de verdade "ao mesmo tempo". Ganho esperado: próximo de <strong>4x</strong> (com 4 tarefas).</p>
+<p>Ver: <code>tarefa_io_bound()</code>, <code>demo_threading_io_bound()</code></p>
+
+<h2>4. I/O-bound com asyncio (mesmo ganho, sem threads)</h2>
+<p>Resolve o mesmo problema que threading resolve pra I/O-bound, mas com <strong>uma thread só</strong>, trocando de tarefa nos pontos de <code>await</code>. Mais leve que threading (sem overhead de criar/gerenciar threads) — é a base de frameworks como o FastAPI.</p>
+<p>Ver: <code>tarefa_io_bound_async()</code>, <code>demo_asyncio_io_bound()</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

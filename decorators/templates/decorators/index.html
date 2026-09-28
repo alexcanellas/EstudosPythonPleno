@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Decorators{% endblock %}
+
+{% block content %}
+<h1>🎁 Decorators</h1>
+<p>Como um decorator funciona por baixo dos panos, decorators com argumentos, functools.wraps e decorators empilhados. O código de verdade está em:</p>
+<div class="arquivo-ref">decorators/exemplos.py</div>
+<p>Roda as funções <code>demo_*</code> no shell do Django:</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from decorators.exemplos import *
+&gt;&gt;&gt; demo_decorator_simples()</code></pre>
+
+<h2>1. Decorator simples</h2>
+<p>Um decorator é só uma função que recebe outra função e devolve uma nova função "envolvendo" ela. A sintaxe <code>@decorator</code> é açúcar sintático para <code>funcao = decorator(funcao)</code>.</p>
+<p>Ver: <code>cronometro()</code>, <code>demo_decorator_simples()</code></p>
+
+<h2>2. functools.wraps</h2>
+<p>Sem <code>@functools.wraps</code>, o wrapper "rouba a identidade" da função original — <code>__name__</code> e <code>__doc__</code> passam a apontar pro wrapper, não pra função real. Isso quebra introspecção, debugging e ferramentas que dependem disso.</p>
+<p>Ver: <code>decorator_sem_wraps()</code> vs <code>decorator_com_wraps()</code>, <code>demo_sem_wraps_vs_com_wraps()</code></p>
+
+<h2>3. Decorator com argumentos</h2>
+<p>Quando você quer <code>@decorator(parametro)</code>, precisa de mais um nível de aninhamento: uma função que recebe o parâmetro e devolve o decorator de verdade. <code>repetir(3)</code> roda primeiro e devolve o decorator, que só então recebe a função.</p>
+<p>Ver: <code>repetir()</code>, <code>demo_decorator_com_argumentos()</code></p>
+
+<h2>4. Decorators empilhados</h2>
+<p>Vários decorators empilhados são <strong>aplicados</strong> de baixo pra cima (o mais próximo da função "envolve" primeiro), mas <strong>executados</strong> de cima pra baixo na hora de chamar a função.</p>
+<p>Ver: <code>log_entrada()</code>, <code>log_maiusculo()</code>, <code>demo_decorators_empilhados()</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

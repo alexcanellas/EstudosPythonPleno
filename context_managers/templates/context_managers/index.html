@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Context Managers{% endblock %}
+
+{% block content %}
+<h1>🔒 Context Managers</h1>
+<p>O protocolo <code>__enter__</code>/<code>__exit__</code>, a versão com <code>@contextmanager</code> e por que o <code>__exit__</code> roda mesmo quando dá exceção. O código de verdade está em:</p>
+<div class="arquivo-ref">context_managers/exemplos.py</div>
+<p>Roda as funções <code>demo_*</code> no shell do Django:</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from context_managers.exemplos import *
+&gt;&gt;&gt; demo_context_manager_classe()</code></pre>
+
+<h2>1. Protocolo __enter__ / __exit__</h2>
+<p>Um context manager é qualquer objeto com dois métodos: <code>__enter__</code> roda ao entrar no <code>with</code> (o que ele retorna vira o <code>as x</code>), e <code>__exit__</code> roda ao sair, <strong>sempre</strong> — com ou sem erro. É isso que garante liberação confiável de recursos (arquivos, conexões, locks).</p>
+<p>Ver: <code>Cronometro</code>, <code>demo_context_manager_classe()</code></p>
+
+<h2>2. __exit__ roda mesmo com exceção</h2>
+<p>Esse é o ponto principal: o <code>__exit__</code> é chamado até quando o código dentro do <code>with</code> quebra. É assim que <code>with open(...)</code> fecha o arquivo mesmo se der erro no meio da leitura. Retornar <code>True</code> no <code>__exit__</code> "abafa" a exceção; <code>False</code>/<code>None</code> deixa ela continuar propagando.</p>
+<p>Ver: <code>RecursoComErro</code>, <code>demo_context_manager_com_excecao()</code></p>
+
+<h2>3. @contextmanager — versão com generator</h2>
+<p>Em vez de escrever uma classe inteira, uma função geradora resolve: tudo <strong>antes</strong> do <code>yield</code> é o <code>__enter__</code>, o valor do <code>yield</code> é o <code>as x</code>, e tudo <strong>depois</strong> (dentro de um <code>finally</code>) é o <code>__exit__</code>.</p>
+<p>Ver: <code>cronometro_simples()</code>, <code>demo_contextmanager_decorator()</code></p>
+
+<h2>4. Múltiplos context managers no mesmo with</h2>
+<p>Dá pra abrir vários de uma vez (<code>with a, b:</code>). A ordem de entrada é da esquerda pra direita, e a ordem de saída é o inverso — como uma pilha (o último que entrou é o primeiro que sai).</p>
+<p>Ver: <code>bloco()</code>, <code>demo_with_statement_multiplo()</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

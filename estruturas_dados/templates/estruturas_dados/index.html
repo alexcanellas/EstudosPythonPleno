@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Estruturas de Dados Internas{% endblock %}
+
+{% block content %}
+<h1>🗂️ Estruturas de Dados Internas</h1>
+<p>Como list, dict e set funcionam por dentro, e por que a complexidade de cada operação importa na prática. O código de verdade, comentado, está em:</p>
+<div class="arquivo-ref">estruturas_dados/exemplos.py</div>
+<p>Roda as funções <code>demo_*</code> no shell do Django:</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from estruturas_dados.exemplos import *
+&gt;&gt;&gt; demo_complexidade_lista()</code></pre>
+
+<h2>1. List — array dinâmico</h2>
+<p>Por dentro, uma <code>list</code> é um array (bloco contíguo de memória com ponteiros pros objetos), com espaço extra reservado pra evitar realocar a cada <code>append</code>. Isso define a complexidade de cada operação:</p>
+<pre><code>lista[i]              -> O(1)   acesso direto por índice
+lista.append(x)       -> O(1)*  amortizado
+lista.insert(0, x)    -> O(n)   empurra tudo pra direita
+lista.pop()           -> O(1)   remove do final
+lista.pop(0)          -> O(n)   remove do início
+x in lista             -> O(n)   varre item por item</code></pre>
+<p>Ver: <code>demo_complexidade_lista()</code></p>
+
+<h2>2. Dict — hash table</h2>
+<p>Um <code>dict</code> guarda pares (hash da chave → valor) numa tabela hash. É isso que torna <code>dict['chave']</code> O(1) em média, independente do tamanho. Consequência: a chave precisa ser <strong>hashable</strong> (imutável) — por isso <code>tuple</code> pode ser chave, mas <code>list</code> não pode.</p>
+<p>Ver: <code>demo_dict_hash()</code></p>
+
+<h2>3. Set — a mesma hash table do dict</h2>
+<p><code>set</code> usa por baixo dos panos a mesma estrutura de hash table do <code>dict</code>, só que sem valor associado — só as chaves. Por isso <code>x in set</code> é O(1) médio, bem diferente de <code>x in list</code>, que é O(n). É também isso que viabiliza as operações de conjunto (união, interseção, diferença) de forma eficiente.</p>
+<p>Ver: <code>demo_set_operacoes()</code></p>
+
+<h2>4. Benchmark real: list vs set</h2>
+<p>Não é só teoria — dá pra medir com <code>timeit</code>. Numa lista com 100 mil elementos, buscar o último item é o pior caso possível pra uma <code>list</code> (O(n)), enquanto o <code>set</code> resolve em tempo praticamente constante (O(1)). A função abaixo imprime quantas vezes o <code>set</code> foi mais rápido, na prática.</p>
+<p>Ver: <code>demo_benchmark_list_vs_set()</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

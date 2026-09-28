@@ -1,0 +1,20 @@
+[run]
+# mede só o código dos apps de estudo que têm testes
+source =
+    django_drf_avancado
+    testes_avancado
+# branch = True mede também os DESVIOS (if/else): cada lado do if conta
+branch = True
+omit =
+    */migrations/*
+    */tests/*
+    */test_*.py
+    */conftest.py
+    */management/*
+    */apps.py
+
+[report]
+# linhas que não precisam de teste (não penalizam a porcentagem)
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:

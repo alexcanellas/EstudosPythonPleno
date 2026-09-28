@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Django + DRF Avançado{% endblock %}
+
+{% block content %}
+<h1>🌐 Django + DRF Avançado</h1>
+<p>ORM avançado, serializers e permissions customizadas, signals e middleware — tudo com dados reais no banco. O código de verdade está em:</p>
+<div class="arquivo-ref">django_drf_avancado/exemplos.py<br>django_drf_avancado/serializers.py<br>django_drf_avancado/permissions.py<br>django_drf_avancado/signals.py<br>django_drf_avancado/middleware.py</div>
+
+<p><strong>Pré-requisito:</strong> rodar <code>python manage.py popular_dados</code> antes de testar as demos.</p>
+
+<h2>1. O problema N+1</h2>
+<p>Sem otimização, buscar N livros e acessar o autor de cada um dispara 1 query pros livros + N queries, uma por autor. <code>CaptureQueriesContext</code> prova isso contando queries reais.</p>
+<p>Ver: <code>demo_problema_n_mais_1()</code></p>
+
+<h2>2. select_related — JOIN no SQL</h2>
+<p>Traz o relacionamento "para um" (ForeignKey) junto na mesma query, via JOIN. Resolve o N+1 quando o relacionamento é direto.</p>
+<p>Ver: <code>demo_solucao_select_related()</code></p>
+
+<h2>3. prefetch_related — para relacionamentos "para muitos"</h2>
+<p>Faz uma segunda query separada buscando todos os relacionados de uma vez, e junta em memória (Python). É a escolha certa pra relacionamentos reversos ou muitos-pra-muitos.</p>
+<p>Ver: <code>demo_prefetch_related()</code></p>
+
+<h2>4. transaction.atomic — tudo ou nada</h2>
+<p>Garante que todas as operações dentro do bloco acontecem, ou nenhuma acontece (rollback automático em caso de erro).</p>
+<p>Ver: <code>demo_transaction_atomic()</code></p>
+
+<h2>5. Serializers customizados</h2>
+<p>Nested serializers (aninhar um relacionamento no JSON), <code>SerializerMethodField</code> (campo calculado), e a diferença entre <code>validate_&lt;campo&gt;</code> (validação de campo único) e <code>validate()</code> (validação cruzada entre campos).</p>
+<p>Ver: <code>AutorSerializer</code>, <code>LivroSerializer</code></p>
+
+<h2>6. Permissions customizadas</h2>
+<p>A diferença entre <code>has_permission</code> (nível de view, roda antes de saber qual objeto) e <code>has_object_permission</code> (nível de objeto, roda depois de já ter o registro em mãos).</p>
+<p>Ver: <code>ApenasLeituraOuAutenticado</code>, <code>ApenasDonoOuLeitura</code></p>
+
+<h2>7. Signals</h2>
+<p><code>post_save</code> e <code>pre_delete</code> permitem reagir a eventos do ORM sem acoplar essa lógica dentro do <code>save()</code> do model. Precisam ser importados no <code>ready()</code> do <code>apps.py</code> pra serem registrados.</p>
+<p>Ver: <code>signals.py</code></p>
+
+<h2>8. Middleware customizado</h2>
+<p>Código que roda em toda requisição, antes da view processar e depois dela responder. A ordem da lista <code>MIDDLEWARE</code> define a ordem de execução na entrada (de cima pra baixo) e o inverso na saída.</p>
+<p>Ver: <code>TempoDeRespostaMiddleware</code>, <code>LogRequisicaoMiddleware</code></p>
+
+<h2>API navegável</h2>
+<p>Testa direto no navegador:</p>
+<pre><code>/django-drf-avancado/api/autores/
+/django-drf-avancado/api/livros/</code></pre>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

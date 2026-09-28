@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Estudos Python Pleno — Índice{% endblock %}
+
+{% block content %}
+<h1>📚 Estudos Python Pleno</h1>
+<p>Roteiro de estudo para entrevistas de Dev Pleno Python. Cada item abaixo é um app Django com a explicação do conceito + código de exemplo comentado.</p>
+
+{% for categoria in categorias %}
+    <h2>{{ categoria.titulo }}</h2>
+    <ul class="indice">
+        {% for item in categoria.itens %}
+        <li>
+            {% if item.pronto %}
+                <a href="{{ item.url }}" {% if 'http' in item.url %}target="_blank" rel="noopener"{% endif %}>{{ item.nome }}</a>
+                <!-- <a href="{{ item.url }}">{{ item.nome }}</a> -->
+                <span class="badge">pronto</span>
+            {% else %}
+                {{ item.nome }}
+                <span class="badge pendente">em breve</span>
+            {% endif %}
+            <div class="desc">{{ item.desc }}</div>
+            {% if item.detalhes %}
+            <ul class="detalhes">
+                {% for topico, explicacao in item.detalhes %}
+                <li><strong>{{ topico }}:</strong> {{ explicacao }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+{% endblock %}

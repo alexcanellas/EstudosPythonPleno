@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Exceções e Type Hints{% endblock %}
+
+{% block content %}
+<h1>⚠️ Exceções e Type Hints</h1>
+<p>Hierarquia de exceções, exceções customizadas, try/except/else/finally completo, encadeamento com raise...from, e os tipos mais usados do módulo typing. O código de verdade está em:</p>
+<div class="arquivo-ref">excecoes_typing/exemplos.py</div>
+<p>Roda as funções <code>demo_*</code> no shell do Django:</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from excecoes_typing.exemplos import *
+&gt;&gt;&gt; demo_hierarquia_excecoes()</code></pre>
+
+<h2>1. Hierarquia de exceções</h2>
+<p>Toda exceção do Python herda de <code>BaseException</code>, mas na prática você lida com a árvore abaixo de <code>Exception</code>. <code>KeyError</code> e <code>IndexError</code>, por exemplo, são ambas <code>LookupError</code> — dá pra capturar as duas com um <code>except LookupError</code>. A ordem dos blocos <code>except</code> importa: do mais específico pro mais genérico.</p>
+<p>Ver: <code>demo_hierarquia_excecoes()</code></p>
+
+<h2>2. Exceções customizadas</h2>
+<p>Criar suas próprias exceções, herdando de <code>Exception</code>, deixa o código mais expressivo e permite carregar dados extras junto com o erro — muito usado em APIs pra mapear erros pra respostas estruturadas (é assim que o DRF mapeia exceções pra status HTTP).</p>
+<p>Ver: <code>SaldoInsuficienteError</code>, <code>demo_excecao_customizada()</code></p>
+
+<h2>3. try / except / else / finally</h2>
+<p><code>else</code> roda só quando <strong>não</strong> houve exceção (separa "o que pode falhar" de "o que fazer quando deu certo"); <code>finally</code> roda <strong>sempre</strong>, com ou sem erro — ideal pra limpeza de recursos.</p>
+<p>Ver: <code>dividir()</code>, <code>demo_try_except_else_finally()</code></p>
+
+<h2>4. raise ... from ... — encadeamento</h2>
+<p>Quando você captura uma exceção e levanta outra no lugar dela, <code>from</code> preserva a exceção original como causa (acessível via <code>__cause__</code>), em vez de esconder o contexto real do erro. Isso é essencial pra debugar em produção.</p>
+<p>Ver: <code>buscar_usuario()</code>, <code>demo_raise_from()</code></p>
+
+<h2>5. Type hints: Optional, Union, List, Dict, Generic</h2>
+<p>Type hints não mudam o comportamento em tempo de execução, mas ajudam ferramentas (mypy, IDEs, DRF, FastAPI) a pegar erros antes de rodar. <code>Optional[str]</code> = pode ser <code>str</code> ou <code>None</code>; <code>Union[int, str]</code> = aceita os dois tipos; <code>Generic[T]</code> permite criar classes que mantêm a informação de tipo (ex: uma <code>Caixa[int]</code> sabe que devolve <code>int</code>).</p>
+<p>Ver: <code>buscar_nome()</code>, <code>processar_id()</code>, <code>Caixa</code>, <code>demo_type_hints_basicos()</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

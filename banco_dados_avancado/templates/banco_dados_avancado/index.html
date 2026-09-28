@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Banco de Dados Avançado{% endblock %}
+
+{% block content %}
+<h1>🗄️ Banco de Dados Avançado</h1>
+<p>SQL puro vs ORM, EXPLAIN QUERY PLAN, índices, transações e isolamento, migrations manuais. Reaproveita os models Autor/Livro do Django/DRF Avançado. O código de verdade está em:</p>
+<div class="arquivo-ref">banco_dados_avancado/exemplos.py</div>
+<p><strong>Pré-requisito:</strong> rodar <code>python manage.py popular_dados</code> antes de testar as demos.</p>
+<p>Roda as funções <code>demo_*</code> no shell do Django:</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from banco_dados_avancado.exemplos import *
+&gt;&gt;&gt; demo_sql_puro_vs_orm()</code></pre>
+
+<h2>1. SQL puro (via cursor) vs ORM</h2>
+<p>O ORM sempre vira SQL por baixo dos panos. <code>connection.cursor()</code> dá acesso direto ao banco, sem passar pelo ORM — útil pra entender o que o ORM está de fato gerando, ou pra query complexa demais pro ORM expressar bem.</p>
+<p>Ver: <code>demo_sql_puro_vs_orm()</code></p>
+
+<h2>2. EXPLAIN QUERY PLAN</h2>
+<p>Pede pro banco explicar a estratégia de execução de uma query, sem rodar ela de verdade. <code>SCAN</code> = varredura completa da tabela (lento); <code>SEARCH</code> = usou um índice pra pular direto pro dado (rápido). É a ferramenta #1 pra descobrir por que uma query está lenta.</p>
+<p>Ver: <code>demo_explain_query_plan()</code></p>
+
+<h2>3. Índices — ganho de performance real</h2>
+<p>Um índice é uma estrutura auxiliar (B-Tree) que o banco mantém ordenada, permitindo pular direto pro dado. Tem custo: toda escrita (INSERT/UPDATE/DELETE) fica um pouco mais lenta, porque o índice também precisa ser atualizado. A demo cria 50 mil registros temporários pra medir o ganho de verdade, e limpa tudo no final.</p>
+<p>Ver: <code>demo_indice_performance()</code></p>
+
+<h2>4. Isolamento de transações e select_for_update</h2>
+<p>Race condition: duas transações lendo o mesmo dado ao mesmo tempo, cada uma aplicando uma mudança sem saber da outra — uma pode sobrescrever a mudança da outra. <code>select_for_update()</code> resolve isso travando a linha no banco até a transação terminar.</p>
+<p>Ver: <code>demo_race_condition_sem_protecao()</code>, <code>demo_select_for_update()</code></p>
+
+<h2>5. Migration manual</h2>
+<p>Diferente de uma migration gerada automaticamente pelo <code>makemigrations</code>, essa foi criada com <code>--empty</code> e escrita na mão, adicionando um índice permanente no campo <code>titulo</code> — a mesma mudança que fizemos manualmente com SQL puro na demo de índices, agora versionada e reprodutível via <code>Meta.indexes</code> no model.</p>
+<p>Ver: <code>django_drf_avancado/migrations/0002_adicionar_indice_titulo.py</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

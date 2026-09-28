@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Testes Avançados (pytest){% endblock %}
+
+{% block content %}
+<h1>🧪 Testes Avançados (pytest)</h1>
+<p>Fixtures, parametrize, mocks, os três níveis de teste e cobertura de código. Diferente dos outros apps, aqui os exemplos são <strong>arquivos de teste de verdade</strong>, rodados com o pytest (não há funções <code>demo_*</code> no shell). Os arquivos estão em:</p>
+<div class="arquivo-ref">testes_avancado/conftest.py<br>testes_avancado/test_fixtures.py<br>testes_avancado/test_parametrize.py<br>testes_avancado/test_mocks.py<br>testes_avancado/test_unitario.py<br>testes_avancado/test_integracao.py<br>testes_avancado/test_e2e.py<br>testes_avancado/servicos.py</div>
+<pre><code>pytest -v                      # suíte inteira
+pytest -m unitario -v          # só um nível
+coverage run -m pytest         # mede cobertura
+coverage report -m
+coverage html</code></pre>
+
+<h2>1. Fixtures</h2>
+<p>Preparam dados e dependências reutilizáveis. Basta declarar um parâmetro com o nome da fixture que o pytest injeta o resultado. Uma fixture pode depender de outra, e o <code>conftest.py</code> as disponibiliza para todos os testes da pasta sem import. Com <code>yield</code>, tudo antes é setup e tudo depois é teardown, que roda mesmo se o teste falhar. O escopo (<code>function</code>, <code>module</code>, <code>session</code>) define quantas vezes ela é recriada.</p>
+<p>Ver: <code>conftest.py</code>, <code>test_fixtures.py</code></p>
+
+<h2>2. parametrize</h2>
+<p>Roda o mesmo teste várias vezes com entradas diferentes, sem duplicar código. <code>ids=</code> dá nomes legíveis a cada caso, e empilhar dois decorators gera o produto cartesiano das combinações. O pytest pode reordenar a execução (agrupa por fixtures de escopo maior), então cada teste precisa ser independente dos outros.</p>
+<p>Ver: <code>test_parametrize.py</code></p>
+
+<h2>3. Mocks</h2>
+<p>Substituem uma dependência externa por um dublê controlado, evitando rede, lentidão e efeitos colaterais reais. Regra de ouro: faz-se o patch do nome <strong>onde ele é usado</strong>, não onde foi definido. <code>return_value</code> simula um resultado, <code>side_effect</code> simula uma falha, e <code>assert_called_once_with</code> verifica o comportamento, incluindo o que <strong>não</strong> deve acontecer. <code>monkeypatch</code> altera ambiente e atributos, com reversão automática.</p>
+<p>Ver: <code>test_mocks.py</code>, <code>servicos.py</code></p>
+
+<h2>4. Unitário vs Integração vs E2E</h2>
+<p>A diferença está em quanto do sistema o teste atravessa. <strong>Unitário</strong>: uma peça isolada, sem banco, muito rápido. <strong>Integração</strong>: várias peças reais juntas (serializer, ORM, signal), com banco. <strong>E2E</strong>: o fluxo completo via HTTP, como um cliente da API faria. Os markers do <code>pytest.ini</code> permitem rodar cada nível separado, e é assim que se separa a suíte rápida (a cada commit) da lenta (no CI).</p>
+<p>Ver: <code>test_unitario.py</code>, <code>test_integracao.py</code>, <code>test_e2e.py</code></p>
+
+<h2>5. Cobertura de código</h2>
+<p>Mede quais linhas foram executadas pelos testes e aponta o código que nenhum teste tocou. Com <code>branch = True</code> mede também os desvios (cada lado de um <code>if</code>). Cobertura alta não prova ausência de bugs: mede o que foi executado, não o que foi verificado. O bug do <code>validate()</code> no PATCH parcial tinha a linha coberta e só apareceu quando um teste exercitou o caso certo.</p>
+<p>Ver: <code>.coveragerc</code>, relatório em <code>htmlcov/index.html</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

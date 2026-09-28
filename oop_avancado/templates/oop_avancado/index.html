@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}OOP Avançado{% endblock %}
+
+{% block content %}
+<h1>🧩 OOP Avançado</h1>
+<p>Os tópicos de orientação a objetos que mais aparecem em entrevista de Pleno. O código de verdade, comentado, está em:</p>
+<div class="arquivo-ref">oop_avancado/exemplos.py</div>
+<p>Abra esse arquivo no VS Code e rode as funções <code>demo_*</code> no shell do Django pra ver o comportamento:</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from oop_avancado.exemplos import *
+&gt;&gt;&gt; demo_mro()</code></pre>
+
+<h2>1. Herança múltipla e MRO</h2>
+<p>Quando uma classe herda de mais de uma, o Python usa o algoritmo <strong>C3 linearization</strong> pra decidir a ordem de busca de métodos — isso é o MRO (<code>Method Resolution Order</code>). <code>super()</code> não significa "minha classe pai": significa "o próximo na fila do MRO". É isso que viabiliza herança cooperativa (todas as classes da cadeia participando de uma chamada só).</p>
+<p>Ver: <code>Motor</code>, <code>SistemaEletrico</code>, <code>Carro</code>, <code>demo_mro()</code></p>
+
+<h2>2. classmethod vs staticmethod vs instance method</h2>
+<ul>
+    <li><strong>instance method</strong> — recebe <code>self</code>, acessa dados da instância</li>
+    <li><strong>classmethod</strong> — recebe <code>cls</code>, muito usado como construtor alternativo (ex: <code>.da_string(...)</code>)</li>
+    <li><strong>staticmethod</strong> — não recebe nem <code>self</code> nem <code>cls</code>; é uma função utilitária que só "mora" na classe por organização</li>
+</ul>
+<p>Ver: <code>Funcionario</code>, <code>demo_classmethod_staticmethod()</code></p>
+
+<h2>3. @property</h2>
+<p>Permite expor um método como se fosse um atributo simples (<code>obj.saldo</code>, sem parênteses), mas com validação por trás. É a forma "pythônica" de fazer getter/setter — em vez de <code>get_saldo()</code>/<code>set_saldo()</code> como em outras linguagens.</p>
+<p>Ver: <code>ContaBancaria</code>, <code>demo_property()</code></p>
+
+<h2>4. Dunder methods</h2>
+<p>Métodos com <code>__nome__</code> definem como o objeto se comporta com operadores e funções nativas do Python:</p>
+<ul>
+    <li><code>__repr__</code> — como o objeto aparece em <code>print()</code>/debugger</li>
+    <li><code>__eq__</code> — como <code>==</code> compara duas instâncias</li>
+    <li><code>__hash__</code> — necessário pra colocar o objeto em <code>set</code> ou usar como chave de <code>dict</code> (se você define <code>__eq__</code>, precisa redefinir <code>__hash__</code> também)</li>
+    <li><code>__add__</code> — como o operador <code>+</code> se comporta entre duas instâncias</li>
+</ul>
+<p>Ver: <code>Ponto</code>, <code>demo_dunder()</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

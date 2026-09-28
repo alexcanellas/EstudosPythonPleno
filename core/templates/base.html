@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Estudos Python Pleno{% endblock %}</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --bg-card: #282838;
+            --text: #e0e0e0;
+            --muted: #9a9ab0;
+            --accent: #7aa2f7;
+            --accent-2: #9ece6a;
+            --border: #3a3a4d;
+            --code-bg: #11111b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+        }
+        header a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1 { color: var(--accent); }
+        h2 { color: var(--accent-2); margin-top: 2rem; }
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        .badge.pendente {
+            background: var(--muted);
+        }
+        ul.indice {
+            list-style: none;
+            padding: 0;
+        }
+        ul.indice li {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        ul.indice a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+        ul.indice a:hover { color: var(--accent); }
+        ul.indice .desc {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        ul.indice .detalhes {
+            list-style: none;
+            padding: 0;
+            margin: 0.75rem 0 0 0;
+            border-top: 1px solid var(--border);
+            padding-top: 0.75rem;
+        }
+        ul.indice .detalhes li {
+            background: none;
+            border: none;
+            padding: 0.2rem 0;
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        ul.indice .detalhes li strong {
+            color: var(--accent-2);
+        }
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        code {
+            font-family: "Fira Code", Consolas, monospace;
+        }
+        .arquivo-ref {
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-2);
+            padding: 0.75rem 1rem;
+            margin: 1.5rem 0;
+            font-family: monospace;
+            color: var(--accent-2);
+        }
+        .voltar {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/">← Estudos Python Pleno</a>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

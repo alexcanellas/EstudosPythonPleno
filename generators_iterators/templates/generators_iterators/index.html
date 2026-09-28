@@ -1,0 +1,31 @@
+
+{% extends "base.html" %}
+{% block title %}Generators e Iterators{% endblock %}
+
+{% block content %}
+<h1>⚡ Generators e Iterators</h1>
+<p>Diferença entre iterable e iterator, yield, yield from, e por que generators economizam memória. O código de verdade está em:</p>
+<div class="arquivo-ref">generators_iterators/exemplos.py</div>
+<p>Roda as funções <code>demo_*</code> no shell do Django:</p>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from generators_iterators.exemplos import *
+&gt;&gt;&gt; demo_generator_basico()</code></pre>
+
+<h2>1. Generator básico — yield</h2>
+<p>Uma função normal roda inteira e devolve um valor com <code>return</code>. Uma função com <code>yield</code> vira uma "generator function": cada <code>yield</code> pausa a execução e devolve um valor, guardando o estado interno até a próxima chamada de <code>next()</code>. É isso que permite processar sequências sem calcular tudo de uma vez.</p>
+<p>Ver: <code>contador_ate()</code>, <code>demo_generator_basico()</code></p>
+
+<h2>2. Memória: generator vs list comprehension</h2>
+<p><code>[x for x in ...]</code> cria todos os elementos na memória de uma vez. <code>(x for x in ...)</code> cria só o gerador — os valores são calculados sob demanda (lazy evaluation). A diferença de consumo de memória é medida na prática com <code>sys.getsizeof</code>, e costuma ser gritante em volumes grandes de dados.</p>
+<p>Ver: <code>demo_memoria_generator_vs_lista()</code></p>
+
+<h2>3. yield from</h2>
+<p><code>yield from</code> delega a produção de valores pra outro iterável, evitando um <code>for</code> + <code>yield</code> manual repetido. Útil pra compor generators ou achatar estruturas aninhadas.</p>
+<p>Ver: <code>generator_combinado()</code>, <code>demo_yield_from()</code></p>
+
+<h2>4. Protocolo iterator — __iter__ e __next__</h2>
+<p>É isso que faz o <code>for</code> funcionar em qualquer objeto: <code>__iter__</code> devolve um iterator, <code>__next__</code> devolve o próximo valor ou levanta <code>StopIteration</code>. Um generator já implementa esse protocolo automaticamente — escrever ele na mão ajuda a entender o que o <code>yield</code> está escondendo por baixo dos panos.</p>
+<p>Ver: <code>Contagem</code>, <code>demo_protocolo_iterator()</code></p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}
