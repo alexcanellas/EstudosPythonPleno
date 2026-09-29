@@ -34,5 +34,7 @@ urlpatterns = [
     path('django-drf-avancado/', include('django_drf_avancado.urls')),
     path('banco-dados-avancado/', include('banco_dados_avancado.urls')),
     path('testes-avancado/', include('testes_avancado.urls')),
-     path('infra-ferramentas/', include('infra_ferramentas.urls')),
+    path('infra-ferramentas/', include('infra_ferramentas.urls')),
 ]
+
+# testando CI
