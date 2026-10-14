@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,6 +36,13 @@ urlpatterns = [
     path('banco-dados-avancado/', include('banco_dados_avancado.urls')),
     path('testes-avancado/', include('testes_avancado.urls')),
     path('infra-ferramentas/', include('infra_ferramentas.urls')),
+    path('apis-arquitetura/', include('apis_arquitetura.urls')),
+    path('boas-praticas/', include('boas_praticas.urls')),
+
+    # Schema OpenAPI gerado automaticamente + Swagger UI de padrão de mercado
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('schema/swagger-ui/',
+         SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
 
 # testando CI

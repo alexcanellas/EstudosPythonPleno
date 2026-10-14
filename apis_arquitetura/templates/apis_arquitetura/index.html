@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}APIs e Arquitetura{% endblock %}
+
+{% block content %}
+<h1>🏗️ APIs e Arquitetura</h1>
+<p>REST na prática, idempotência, versionamento, autenticação, documentação OpenAPI, camadas de arquitetura e o trade-off entre monolito e microsserviços. Os endpoints são testados no Swagger e os arquivos estão em:</p>
+<div class="arquivo-ref">apis_arquitetura/views.py<br>apis_arquitetura/serializers.py<br>apis_arquitetura/services.py<br>apis_arquitetura/repositories.py<br>apis_arquitetura/exemplos.py<br>testes_avancado/test_service_layer.py</div>
+
+<h2>Documentação gerada automaticamente</h2>
+<ul>
+    <li><a href="/schema/swagger-ui/" target="_blank" rel="noopener">Swagger UI</a>: interface navegável do OpenAPI</li>
+    <li><a href="/schema/" target="_blank" rel="noopener">Schema OpenAPI cru</a>: o arquivo que alimenta o Swagger</li>
+</ul>
+
+<h2>1. Status codes e idempotência</h2>
+<p>O status code é parte do contrato: <code>201</code> criou (com o header <code>Location</code>), <code>204</code> deu certo sem corpo, <code>400</code> dado malformado, <code>404</code> não existe, <code>409</code> conflito com o estado atual. Uma operação é <strong>idempotente</strong> quando repetir deixa o servidor no mesmo estado que uma execução só: <code>GET</code>, <code>PUT</code> e <code>DELETE</code> são, <code>POST</code> não é. Idempotência fala do estado do servidor, não do status code: o segundo <code>DELETE</code> devolve <code>404</code> e continua idempotente. Para tornar um <code>POST</code> seguro contra repetição (timeout, clique duplo), o cliente manda o header <code>Idempotency-Key</code> e o servidor devolve a resposta original em vez de criar de novo. Mesma chave com corpo diferente dá <code>409</code>.</p>
+<p>Ver: <code>LivroListaView</code>, <code>LivroDetalheView</code> em <code>views.py</code></p>
+
+<h2>2. Versionamento de API</h2>
+<p>Serve para mudar a API sem quebrar quem já a usa. Adicionar campo ou endpoint não quebra clientes; remover, renomear ou mudar o tipo de um campo quebra, e pede versão nova. Três estratégias: <strong>na URL</strong> (<code>/v2/</code>, a mais comum e fácil de operar), <strong>em header</strong> (URL limpa, mas difícil de testar) e <strong>query param</strong> (simples, porém ambíguo). O ciclo de vida de uma versão: lançar a nova, anunciar a depreciação da antiga (headers <code>Deprecation</code> e <code>Sunset</code>), manter as duas por uma janela, monitorar quem ainda chama a antiga e só então remover.</p>
+<p>Ver: <code>LivroVersionadoView</code>, <code>LivroV2Serializer</code></p>
+
+<h2>3. Autenticação: sessions, JWT e OAuth2</h2>
+<p><strong>Session</strong> é stateful: o servidor guarda a sessão e o cliente só leva o ID num cookie. É fácil de revogar e é o que o Django Admin usa. <strong>JWT</strong> é stateless: o próprio token carrega as informações, assinadas. Qualquer servidor valida só com a chave, mas não há como revogar antes do <code>exp</code> sem uma blacklist, que tira o caráter stateless. O token são três partes (cabeçalho, carga e assinatura): a carga é só base64, legível por qualquer um, então nunca leva segredo. A assinatura garante integridade, não sigilo. Um <em>access</em> curto (5 min) trafega em toda requisição, e um <em>refresh</em> longo só serve para pedir um access novo. <strong>OAuth2</strong> não é um jeito de fazer login: é um protocolo de <strong>autorização delegada</strong> ("este app pode acessar meus dados no serviço Y sem minha senha"). A identidade vem de uma camada em cima, o OpenID Connect. Por fim, <code>401</code> é "não sei quem você é" e <code>403</code> é "sei quem você é, mas você não pode".</p>
+<p>Ver: <code>PerfilView</code>, <code>SomenteAdminView</code>, <code>exemplos.py</code> (<code>demo_anatomia_do_jwt</code>, <code>demo_adulterar_jwt</code>, <code>demo_expiracao</code>)</p>
+
+<h2>4. Swagger / OpenAPI real</h2>
+<p>O <code>drf-spectacular</code> gera o schema <strong>OpenAPI</strong>, o padrão de mercado que qualquer ferramenta entende, e o Swagger UI desenha a interface a partir dele. Difere da Browsable API nativa do DRF, que é navegável mas específica do framework e vive na própria URL do endpoint. O <code>@extend_schema</code> descreve respostas e parâmetros que o drf-spectacular não consegue inferir (como o header <code>Idempotency-Key</code>), e o type hint de retorno em um <code>SerializerMethodField</code> é o que permite descrever o campo sem warning. É o equivalente ao <code>/docs</code> que o FastAPI traz de fábrica.</p>
+<p>Ver: <code>/schema/swagger-ui/</code>, <code>@extend_schema</code> em <code>views.py</code></p>
+
+<h2>5. Service layer e repository pattern</h2>
+<p>Separa a view em três camadas. A <strong>view</strong> traduz HTTP (lê a requisição, chama o service, converte erros em status code). O <strong>service</strong> guarda as regras de negócio e não importa nada de Django. O <strong>repository</strong> concentra as queries. O service recebe os repositórios no construtor (injeção de dependência), então nos testes entra um repositório falso em memória, e as regras são testadas sem banco e sem HTTP. Os erros de domínio dizem o que deu errado em termos de negócio, e a view decide o status: <code>400</code> é formato inválido (quem decide é o serializer) e <code>422</code> é dado bem formado que viola uma regra (quem decide é o service). O custo é mais arquivos e indireção. Em Django o ORM já faz papel de repositório, então em CRUD simples isso é cerimônia. Compensa quando há regra de negócio relevante ou quando a mesma regra é chamada de lugares diferentes (view, task do Celery, comando).</p>
+<p>Ver: <code>services.py</code>, <code>repositories.py</code>, <code>LivroCamadasView</code>, <code>test_service_layer.py</code></p>
+
+<h2>6. Monolito vs microsserviços</h2>
+<table>
+    <tr><th></th><th>Monolito</th><th>Microsserviços</th></tr>
+    <tr><td><strong>Deploy</strong></td><td>Uma unidade só</td><td>Cada serviço sozinho</td></tr>
+    <tr><td><strong>Chamada entre partes</strong></td><td>Função local: rápida e confiável</td><td>Rede: latência, timeout, falha parcial</td></tr>
+    <tr><td><strong>Transações</strong></td><td>ACID de verdade</td><td>Consistência eventual (saga)</td></tr>
+    <tr><td><strong>Escala</strong></td><td>Tudo junto</td><td>Só o serviço que precisa</td></tr>
+    <tr><td><strong>Falha</strong></td><td>Pode derrubar tudo</td><td>Isolada, se bem projetada</td></tr>
+    <tr><td><strong>Complexidade operacional</strong></td><td>Baixa</td><td>Alta (observabilidade, contratos, deploys)</td></tr>
+</table>
+<p>Microsserviços não são "o monolito melhor": trocam um problema por outro. O caminho comum é começar com um <strong>monolito modular</strong> e extrair um serviço quando a dor é real (um módulo que precisa escalar diferente, uma equipe que precisa de autonomia). O anti-padrão clássico é o <strong>monolito distribuído</strong>: serviços separados que continuam acoplados e precisam ser implantados juntos, com a complexidade de rede e sem nenhum ganho. Cada serviço deve ser dono dos seus dados, e a comunicação pode ser síncrona (HTTP, gRPC) ou assíncrona (filas, eventos, como o Celery).</p>
+<p>Neste projeto: o <code>EstudosPythonPleno</code> é um monolito modular, o <code>worker</code> do Celery é o mesmo código em outro processo, e o <code>EstudosFastAPI</code> é um serviço separado. Ao virar serviços, o <code>Idempotency-Key</code>, o versionamento e o JWT deixam de ser detalhes e passam a ser requisitos.</p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}

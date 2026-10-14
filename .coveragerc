@@ -1,8 +1,10 @@
 [run]
-# mede só o código dos apps de estudo que têm testes
+# mede só o código dos apps que têm testes ou lógica de negócio
 source =
     django_drf_avancado
     testes_avancado
+    apis_arquitetura
+    boas_praticas
 # branch = True mede também os DESVIOS (if/else): cada lado do if conta
 branch = True
 omit =
