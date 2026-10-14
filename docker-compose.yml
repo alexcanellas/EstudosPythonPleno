@@ -1,0 +1,51 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Sobrescreve o CACHE_URL do .env especificamente para este
+      # container. Dentro da rede do Compose, o Redis não é acessível
+      # em "127.0.0.1" (isso apontaria pro próprio container web) — é
+      # acessível pelo NOME DO SERVIÇO, "redis", que o Compose resolve
+      # sozinho via DNS interno.
+      - CACHE_URL=redis://redis:6379/1
+    volumes:
+      # Bind mount: a pasta do projeto no Windows é "espelhada" dentro
+      # do container, em vez de usar a cópia congelada da imagem (o
+      # COPY . . do Dockerfile). Assim, editar um .py no VS Code reflete
+      # na hora dentro do container rodando — sem precisar rebuildar.
+      - .:/app
+    # A imagem final roda como appuser (não-root), mas o bind mount traz
+    # a pasta com as permissões do Windows, o que pode conflitar com
+    # esse usuário. Pra desenvolvimento, roda como root aqui — a
+    # restrição de segurança do usuário não-root importa pra imagem que
+    # vai pra produção, não pro ambiente local com hot-reload.
+    user: root
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  worker:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - CACHE_URL=redis://redis:6379/1
+    volumes:
+      - .:/app
+    user: root
+    command: celery -A EstudosPythonPleno worker --loglevel=info
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:

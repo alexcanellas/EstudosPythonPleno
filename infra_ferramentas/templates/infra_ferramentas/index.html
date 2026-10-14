@@ -3,6 +3,46 @@
 
 {% block content %}
 <h1>🛠️ Infra e Ferramentas</h1>
-<p>Em construção. O conteúdo completo vem nas próximas etapas.</p>
+<p>Variáveis de ambiente, cache, Git, CI/CD e Docker. Parte desse conteúdo é arquivo de configuração e comando de terminal, não código Python rodando em view — por isso essa página documenta tudo, e o <code>exemplos.py</code> cobre só o que tem lógica de verdade pra rodar no shell.</p>
+<div class="arquivo-ref">infra_ferramentas/exemplos.py<br>infra_ferramentas/tasks.py<br>.env / .env.example<br>Dockerfile / docker-compose.yml / .dockerignore<br>.github/workflows/ci.yml<br>EstudosPythonPleno/celery.py</div>
+
+<h2>1. Variáveis de ambiente e segredos</h2>
+<p>Configuração que muda entre ambientes e segredos ficam fora do código, no <code>.env</code> (nunca versionado). O <code>.env.example</code> documenta quais variáveis o projeto precisa, sem os valores reais. O <code>python-decouple</code> lê essas variáveis já convertidas pro tipo certo (<code>cast=bool</code>, <code>cast=Csv()</code>) — sem isso, <code>bool("False")</code> daria <code>True</code>, porque toda string não vazia é truthy. Uma variável obrigatória sem default falha cedo e alto, em vez de silenciosamente virar <code>None</code> lá na frente.</p>
+<p>Ver: <code>demo_leitura_com_tipos()</code>, <code>demo_ordem_de_prioridade()</code>, <code>demo_variavel_obrigatoria_ausente()</code>, <code>demo_mascarar_segredo()</code></p>
+
+<h2>2. Cache</h2>
+<p><strong>Cache-aside</strong>: pergunta ao cache primeiro; se não achar (miss), busca na fonte e guarda o resultado pro próximo. O ganho de performance é real e mensurável — nas demos, a primeira busca leva ~1s (foi na fonte) e as seguintes são quase instantâneas (vieram do cache). O lado difícil é a <strong>invalidação</strong>: se a fonte muda e ninguém avisa o cache, ele serve dado desatualizado até expirar pelo TTL. O backend é trocável só mudando o <code>CACHE_URL</code> no <code>.env</code> — em memória (<code>LocMemCache</code>) para desenvolvimento simples, Redis quando rodando via Docker.</p>
+<p>Ver: <code>demo_operacoes_basicas()</code>, <code>demo_cache_aside()</code>, <code>demo_invalidacao()</code>, <code>demo_ttl()</code></p>
+
+<h2>3. Git</h2>
+<p><strong>merge</strong> preserva o histórico como aconteceu, com um commit de merge juntando as duas linhas. <strong>rebase</strong> reescreve os commits da branch por cima da base, deixando o histórico linear — mas gera hashes novos, por isso nunca se faz rebase de uma branch que outras pessoas já baixaram. <strong>Conflito</strong> acontece quando as duas branches alteram a mesma linha: o Git para no meio e marca o arquivo com <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> / <code>=======</code> / <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>, esperando a resolução manual.</p>
+<p>Ver: <code>demo_merge_vs_rebase()</code>, <code>demo_criar_conflito()</code></p>
+
+<h2>4. CI/CD</h2>
+<p><strong>CI</strong> roda os testes automaticamente a cada push ou Pull Request, numa máquina virtual limpa — prova que o código funciona fora da sua máquina, sem depender de nada que só exista localmente. <strong>CD</strong> é a continuação natural: publicar o que passou no CI. O workflow (<code>ci.yml</code>) é só YAML versionado junto do código: baixa o repositório, configura o Python, instala as dependências do <code>requirements.txt</code> e roda <code>pytest</code> + <code>coverage</code>.</p>
+<p>Ver: <code>.github/workflows/ci.yml</code></p>
+
+<h2>5. Docker</h2>
+<p>O <strong>Dockerfile</strong> descreve como construir uma imagem: uma "receita" de sistema de arquivos congelado. <strong>Multi-stage build</strong> separa onde as dependências são instaladas (<code>builder</code>) do que realmente roda em produção (<code>final</code>) — só o necessário é copiado entre os estágios, deixando a imagem final menor. Rodar como usuário não-root é prática de segurança comum, mas exige <code>chown</code> explícito na pasta da aplicação, senão o processo não tem permissão de escrita nela. O <strong>docker-compose.yml</strong> sobe vários serviços relacionados juntos (aqui, Django + Redis), conectados numa rede interna onde cada serviço enxerga o outro pelo nome.</p>
+<p>Ver: <code>Dockerfile</code>, <code>docker-compose.yml</code>, <code>.dockerignore</code></p>
+
+<h2>6. Celery + Redis</h2>
+<p>Resolve um problema específico: tarefa demorada (e-mail, relatório, chamada de API externa) não pode travar a requisição HTTP. A view chama <code>.delay()</code>, que só enfileira a tarefa no Redis (instantâneo) e devolve resposta na hora. Um processo <strong>separado</strong>, o <strong>worker</strong>, fica de olho na fila e executa o trabalho pesado em paralelo, sem o usuário esperar.</p>
+
+<p><strong>Os 3 papéis:</strong></p>
+<ul>
+    <li><strong>Django (view)</strong> — enfileira com <code>.delay(...)</code>, segue na hora</li>
+    <li><strong>Redis (broker)</strong> — só guarda a fila de "bilhetes", não executa nada</li>
+    <li><strong>Worker</strong> — processo rodando continuamente, consome a fila e executa de verdade</li>
+</ul>
+
+<p><strong>Quando usar:</strong> a operação não precisa de resposta imediata pro usuário ver o resultado (e-mail, notificação), é pesada o bastante pra impactar a experiência (mais de ~1s), ou precisa de retry automático em caso de falha.</p>
+
+<p><strong>Quando NÃO usar:</strong> a operação é rápida o suficiente pra rodar na própria requisição, ou o resultado precisa aparecer imediatamente na mesma tela (ex: total de um carrinho).</p>
+
+<p><strong>Celery vs asyncio</strong> — os dois resolvem espera, mas em escalas diferentes: <code>asyncio</code> é pra esperar I/O sem travar <em>dentro</em> da mesma requisição (ex: 3 chamadas de API em paralelo, antes de responder); Celery é pra trabalho que continua rodando <em>depois</em> da requisição já ter terminado, num processo totalmente separado.</p>
+
+<p>Ver: <code>tasks.py</code>, <code>demo_celery_basico()</code>, <code>demo_celery_multiplas_tarefas_em_paralelo()</code>, <code>demo_celery_com_falha()</code></p>
+
 <a class="voltar" href="/">← voltar pro índice</a>
 {% endblock %}
