@@ -340,3 +340,62 @@ def demo_criar_conflito():
     print((pasta / 'config.txt').read_text(encoding='utf-8'))
 
     print(f"Repositório parado em conflito, esperando você:\n  {pasta}")
+
+
+
+    # ---------------------------------------------------------------------------
+# 10. CELERY: ENFILEIRANDO TAREFAS (requer o worker rodando, veja abaixo)
+# ---------------------------------------------------------------------------
+from infra_ferramentas.tasks import tarefa_demorada, enviar_email_simulado, somar_async, tarefa_com_falha
+
+
+def demo_celery_basico():
+    print("Chamando .delay() — isso SÓ enfileira, não executa aqui:")
+    inicio = time.perf_counter()
+    resultado_assincrono = tarefa_demorada.delay(3)
+    duracao_enfileirar = time.perf_counter() - inicio
+
+    print(f"  .delay() retornou em {duracao_enfileirar:.4f}s (quase instantâneo)")
+    print(f"  ID da task: {resultado_assincrono.id}")
+    print(f"  Status logo após enfileirar: {resultado_assincrono.status}")
+
+    print("\nEsperando o worker processar (.get() BLOQUEIA até terminar)...")
+    valor = resultado_assincrono.get(timeout=10)
+    print(f"  Resultado: {valor}")
+    print(f"  Status final: {resultado_assincrono.status}")
+
+
+def demo_celery_multiplas_tarefas_em_paralelo():
+    print("Enfileirando 3 tarefas de uma vez (cada uma simula 2s de trabalho):")
+    inicio = time.perf_counter()
+
+    r1 = enviar_email_simulado.delay("ana@email.com", "Bem-vinda")
+    r2 = enviar_email_simulado.delay("bruno@email.com", "Confirmação")
+    r3 = somar_async.delay(10, 20)
+
+    duracao_enfileirar = time.perf_counter() - inicio
+    print(f"  As 3 chamadas de .delay() levaram só {duracao_enfileirar:.4f}s juntas")
+
+    print("\nEsperando os 3 resultados...")
+    inicio = time.perf_counter()
+    resultado_r1 = r1.get(timeout=10)
+    resultado_r2 = r2.get(timeout=10)
+    resultado_r3 = r3.get(timeout=10)
+    duracao_total = time.perf_counter() - inicio
+
+    print(f"  Resultados: {resultado_r1}, {resultado_r2}, {resultado_r3}")
+    print(f"  Tempo esperando: {duracao_total:.2f}s")
+    print("  (se o worker tiver mais de 1 processo, as tarefas rodam em")
+    print("   paralelo de verdade — tempo total tende ao MAIOR tempo")
+    print("   individual, não à soma de todos)")
+
+
+def demo_celery_com_falha():
+    print("Enfileirando uma task que vai falhar de propósito:")
+    resultado = tarefa_com_falha.delay()
+
+    try:
+        resultado.get(timeout=10)
+    except ValueError as erro:
+        print(f"  A exceção do WORKER chegou até aqui: {erro}")
+        print(f"  Status da task: {resultado.status}")  # deve ser 'FAILURE'

@@ -187,6 +187,41 @@ CATEGORIAS = [
             },
         ],
     },
+    {
+        'titulo': '6. APIs e Arquitetura',
+        'itens': [
+            {
+                'nome': 'APIs e Arquitetura',
+                'desc': 'Status codes, idempotência, versionamento, JWT/OAuth2/sessions, Swagger real, service layer, monolito vs microsserviços',
+                'url': '/apis-arquitetura/',
+                'pronto': True,
+                'detalhes': [
+                    ('REST e idempotência', 'GET/PUT/DELETE são idempotentes (repetir não muda o resultado); POST não é. Status code certo comunica a intenção: 201 ao criar, 204 ao deletar, 409 em conflito'),
+                    ('Versionamento de API', 'Via URL (/v1/), header customizado, ou Accept header — cada um com trade-off diferente entre simplicidade e "pureza REST"'),
+                    ('JWT vs OAuth2 vs sessions', 'Session: stateful, o servidor guarda o estado. JWT: stateless, o próprio token carrega a informação assinada. OAuth2 é um protocolo de autorização, não de autenticação — delega acesso sem compartilhar senha'),
+                    ('Swagger/OpenAPI real', 'drf-spectacular gera o schema OpenAPI padrão de mercado, diferente da Browsable API nativa do DRF'),
+                    ('Service layer / Repository pattern', 'Separar regra de negócio (service) e acesso a dados (repository) da view deixa a lógica testável sem precisar simular uma requisição HTTP inteira'),
+                    ('Monolito vs microsserviços', 'Trade-off entre simplicidade operacional (monolito) e escalabilidade/isolamento de falha independente (microsserviços) — conectando com o FastAPI separado que você já tem'),
+                ],
+            },
+        ],
+    },
+    {
+        'titulo': '7. Boas Práticas',
+        'itens': [
+            {
+                'nome': 'Boas Práticas',
+                'desc': 'SOLID, Clean Code, design patterns (Factory, Singleton, Strategy)',
+                'url': '/boas-praticas/',
+                'pronto': True,
+                'detalhes': [
+                    ('SOLID', 'Cinco princípios de design: uma responsabilidade por classe (S), estender sem modificar (O), subtipos substituíveis (L), interfaces pequenas (I) e depender de abstrações, não de implementações (D)'),
+                    ('Clean Code', 'Nomes que revelam intenção, funções pequenas que fazem uma coisa, guard clauses em vez de if aninhado, sem números mágicos e sem duplicação'),
+                    ('Design patterns', 'Soluções recorrentes com nome: Factory centraliza a criação de objetos, Singleton garante uma instância única, Strategy troca o algoritmo sem mudar quem o usa. Em Python, muitos viram só uma função ou um módulo'),
+                ],
+            },
+        ],
+    },
 ]
 
 

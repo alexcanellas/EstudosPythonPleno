@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 from decouple import config, Csv
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,8 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Csv() transforma "a,b,c" em ['a', 'b', 'c'].
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
 
 # Application definition
@@ -44,6 +46,7 @@ INSTALLED_APPS = [
     # Apps de estudo — Categoria 1: Python "de verdade"
 
     'rest_framework',
+    'drf_spectacular',
 
     'core',
     'oop_avancado',
@@ -57,6 +60,9 @@ INSTALLED_APPS = [
     'banco_dados_avancado',
     'testes_avancado',
     'infra_ferramentas',
+    'apis_arquitetura',
+    'boas_praticas',
+
 ]
 
 MIDDLEWARE = [
@@ -170,3 +176,33 @@ else:
             'LOCATION': 'estudos-locmem',
         }
     }
+
+
+# Celery: usa o mesmo Redis do cache, mas um banco lógico DIFERENTE
+# (o Redis numera "bancos" de 0 a 15 dentro da mesma instância — isso
+# evita que uma chave de cache e uma mensagem de fila colidam por acaso).
+CELERY_BROKER_URL = config(
+    'CACHE_URL', default='redis://127.0.0.1:6379/2').replace('/1', '/2')
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Estudos Python Pleno — API',
+    'DESCRIPTION': 'Categoria 6: APIs e Arquitetura',
+    'VERSION': '1.0.0',
+}
+
+
+SIMPLE_JWT = {
+    # Access curto de propósito: é ele que trafega em toda requisição.
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    # Refresh longo: só viaja quando se pede um access novo.
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}

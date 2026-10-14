@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Boas Práticas{% endblock %}
+
+{% block content %}
+<h1>✨ Boas Práticas</h1>
+<p>SOLID, Clean Code e design patterns. Cada tópico tem o código que <strong>viola</strong> o princípio ao lado do código corrigido, e as demos mostram que os dois fazem a mesma coisa, com custo de leitura e de mudança diferentes. Os arquivos estão em:</p>
+<div class="arquivo-ref">boas_praticas/solid.py<br>boas_praticas/clean_code.py<br>boas_praticas/padroes.py</div>
+<pre><code>python manage.py shell
+&gt;&gt;&gt; from boas_praticas.solid import *
+&gt;&gt;&gt; demo_srp()</code></pre>
+
+<h2>1. SOLID</h2>
+<table>
+    <tr><th>Princípio</th><th>Em uma frase</th><th>Onde aparece no projeto</th></tr>
+    <tr><td><strong>S</strong>RP</td><td>Um único motivo para mudar</td><td>As camadas view, service e repository</td></tr>
+    <tr><td><strong>O</strong>CP</td><td>Estender sem editar o que já funciona</td><td>O registro de fretes (decorator da Categoria 1)</td></tr>
+    <tr><td><strong>L</strong>SP</td><td>O subtipo funciona onde se espera o tipo base</td><td>A hierarquia de exceções de domínio</td></tr>
+    <tr><td><strong>I</strong>SP</td><td>Interfaces pequenas, sem métodos de mentira</td><td>Os <code>Protocol</code> de Impressora e Scanner</td></tr>
+    <tr><td><strong>D</strong>IP</td><td>Depender de abstrações, não de detalhes</td><td>O <code>LivroService</code> recebendo repositórios</td></tr>
+</table>
+<p><strong>SRP</strong> não é "faz uma coisa só": é "tem um motivo para mudar". A pergunta útil é quem pediria uma mudança aqui. <strong>OCP</strong> não proíbe editar arquivos: diz que um comportamento novo não deveria exigir mexer no código que já funciona. Um <code>if/elif</code> de dois casos estáveis está ótimo, e abstrair cedo demais é over-engineering. <strong>LSP</strong>: o quadrado é um retângulo na geometria, mas como classes mutáveis a herança quebra o contrato (a área de um 5x4 sai 16, e não 20). Sinais de violação: subclasse que levanta <code>NotImplementedError</code>, ou código cheio de <code>isinstance</code>. Na dúvida, composição em vez de herança. <strong>ISP</strong>: um <code>NotImplementedError</code> num método herdado denuncia duas violações ao mesmo tempo, a do L e a do I. <strong>DIP</strong>: injeção de dependência é a técnica (receber de fora), e inversão é o princípio (o código de alto nível define a abstração de que precisa). Em Python o <code>Protocol</code> é opcional, e serve para documentar o contrato e deixar o mypy conferir.</p>
+<p>Ver: <code>solid.py</code> (<code>demo_srp</code>, <code>demo_dip</code>, <code>demo_ocp</code>, <code>demo_lsp</code>, <code>demo_isp</code>)</p>
+
+<h2>2. Clean Code</h2>
+<p>Mede quanto custa <strong>ler</strong> o código, porque ele é lido muito mais vezes do que escrito. São heurísticas, não leis.</p>
+<ul>
+    <li><strong>Nomes que revelam a intenção:</strong> se precisa de comentário para explicar um nome, o nome está errado.</li>
+    <li><strong>Funções pequenas, um nível de abstração:</strong> o critério não é o número de linhas, é misturar "o quê" com "como". A função boa lê como um resumo.</li>
+    <li><strong>Guard clauses:</strong> trata os casos de saída primeiro e deixa o caminho feliz no fim, sem a pirâmide de <code>if</code> (indentação máxima 5 caiu para 2). É a mesma ideia da validação do Pydantic.</li>
+    <li><strong>Números mágicos:</strong> dá nome ao que o número significa. Um <code>Enum</code> falha alto, e um status <code>22</code> digitado por engano vira erro na hora, e não um bug silencioso.</li>
+    <li><strong>DRY é sobre conhecimento:</strong> a regra "a alíquota é 18%" não pode morar em dois lugares. Mas duas funções que se parecem e mudam por motivos diferentes devem ficar separadas: duplicação é mais barata que a abstração errada.</li>
+    <li><strong>Argumento padrão mutável:</strong> o default é calculado uma vez, quando o <code>def</code> executa, e todas as chamadas compartilham a mesma lista. A correção é o <code>None</code> como sentinela (em dataclass, <code>field(default_factory=list)</code>).</li>
+</ul>
+<p>Comentário explica o <strong>porquê</strong>, não o quê. Várias dessas regras um linter como o <code>ruff</code> aponta sozinho, e por isso costumam ir pro CI e não pra revisão humana.</p>
+<p>Ver: <code>clean_code.py</code> (<code>demo_nomes</code>, <code>demo_funcoes_pequenas</code>, <code>demo_guard_clauses</code>, <code>demo_numeros_magicos</code>, <code>demo_duplicacao</code>, <code>demo_argumento_mutavel</code>)</p>
+
+<h2>3. Design patterns</h2>
+<p>Vocabulário de soluções recorrentes. Em Python muitos viram uma função ou um módulo, porque funções e classes são objetos comuns.</p>
+<table>
+    <tr><th>Padrão</th><th>Para quê</th><th>Em Python</th></tr>
+    <tr><td><strong>Factory</strong></td><td>Um único lugar sabe qual objeto criar</td><td>Um dicionário de classes, ou um <code>classmethod</code> como construtor alternativo</td></tr>
+    <tr><td><strong>Singleton</strong></td><td>Uma instância só para o processo</td><td>Um objeto no nível do módulo (o <code>settings</code> do Django), ou <code>lru_cache</code> numa função</td></tr>
+    <tr><td><strong>Strategy</strong></td><td>Trocar o algoritmo sem mudar quem o usa</td><td>Uma função passada como argumento (<code>sorted(key=...)</code>)</td></tr>
+</table>
+<p><strong>Singleton</strong> é o mais criticado: é estado global com cara de objeto, esconde dependências e vaza estado entre testes. A armadilha clássica é o <code>__init__</code> que roda a cada chamada e apaga o estado, e o <code>__new__</code> simples não é thread-safe. Prefira um objeto no nível do módulo, ou injete a dependência (o DIP). Usos legítimos: configuração, pool de conexões, logger. <strong>Strategy</strong> difere do registro do OCP: lá a chave escolhe a regra dentro de uma função, aqui a regra é entregue a quem a vai usar, e pode ser trocada em tempo de execução. Você já usou Strategy sem o nome: o <code>authentication_classes</code> e o <code>versioning_class</code> do DRF, e o backend de cache escolhido pelo <code>CACHE_URL</code>.</p>
+<p>Outros padrões que você já encontrou no projeto: <strong>Observer</strong> (os signals do Django), <strong>Decorator</strong> (o <code>@</code> da Categoria 1) e <strong>Repository</strong> (Categoria 6).</p>
+<p>Ver: <code>padroes.py</code> (<code>demo_factory</code>, <code>demo_singleton</code>, <code>demo_strategy</code>)</p>
+
+<a class="voltar" href="/">← voltar pro índice</a>
+{% endblock %}
