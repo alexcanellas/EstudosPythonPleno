@@ -2,6 +2,8 @@
 
 Projeto de estudo para a preparação de uma vaga de Dev Pleno Python. Cada tópico é um app Django com duas partes: uma **página de documentação** (a explicação do conceito) e um **código de verdade, comentado**, que se estuda no editor e se roda no shell. A página inicial funciona como índice, com um resumo de cada tópico.
 
+![CI](https://github.com/alexcanellas/EstudosPythonPleno/actions/workflows/ci.yml/badge.svg)
+
 ## Roteiro
 
 | Categoria | App | O que cobre |
