@@ -58,11 +58,12 @@ def demo_mro():
 # 2. CLASSMETHOD vs STATICMETHOD vs INSTANCE METHOD
 # ---------------------------------------------------------------------------
 class Funcionario:
-    empresa = "CRCRJ"  # atributo de classe, compartilhado por todas as instâncias
+    empresa = "Acme"  # atributo de classe, compartilhado por todas as instâncias
 
     def __init__(self, nome, salario):
         self.nome = nome
         self.salario = salario
+
 
     def descricao(self):
         # instance method: recebe `self`, acessa dados da INSTÂNCIA
